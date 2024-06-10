@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2024-06-10
+
 ### Added
 
 - Radial Menus
 - Dropdowns
 - Radio Buttons
+
+[unreleased]: https://github.com/erumi321/Hades2UILibrary/compare/0.1.0...HEAD
+[0.1.0]: https://github.com/erumi321/Hades2UILibrary/compare/04a9667a7ec4fb2ce0c5de9d3d7c577cd9650bf2...0.1.0
