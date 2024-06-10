@@ -7,17 +7,57 @@
 -- 	so you will most likely want to have it reference
 --	values and functions later defined in `reload.lua`.
 
-local file = rom.path.combine(rom.paths.Content, 'Game/Text/en/ShellText.en.sjson')
+rom.game.ErumiUILib = {
+	RadioButton = {}
+}
 
-sjson.hook(file, function(data)
-	return sjson_ShellText(data)
+local guiPath = rom.path.combine(rom.paths.Content, 'Game/Obstacles/GUI.sjson')
+local guiAnimPath = rom.path.combine(rom.paths.Content, 'Game/Animations/GUIAnimations.sjson')
+
+sjson.hook(guiAnimPath, function(data)
+	return sjson_RadialIcon(data)
 end)
 
-modutil.mod.Path.Wrap("SetupMap", function(base, ...)
-	prefix_SetupMap()
-	return base(...)
+sjson.hook(guiPath, function(data)
+	return sjson_RadialObstacle(data)
 end)
 
-game.OnControlPressed({'Gift', function()
-	return trigger_Gift()
-end})
+function sjson_RadialObstacle(data)
+    table.insert(data.Obstacles, {
+        Name = "RadialSelectorIcon",
+        InheritFrom = "1_BaseGUIObstacle",
+        DisplayInEditor = false,
+        Thing =
+        {
+            EditorOutlineDrawBounds = false,
+            Interact =
+            {
+                CursorOnly = true,
+                UseExtents = true
+            },
+        }
+    })
+end
+
+
+function sjson_RadialIcon(data)
+    table.insert(data.Animations, {
+        Name = "RadialArrow",
+        FilePath = "GUI\\Shell\\OptionSelectorIcon",
+        Material = "Unlit",
+        OffsetX = 0,
+        StartScale = 0.501,
+        EndScale = 0.5
+    })
+
+	table.insert(data.Animations, {
+        Name = "RadialArrowBright",
+        FilePath = "GUI\\Shell\\OptionSelectorIcon",
+        Material = "Unlit",
+        OffsetX = 0,
+        StartScale = 0.501,
+        EndScale = 0.5,
+		AddColor = true,
+		Color = {Red = 0.3, Blue = 0.3, Green = 0.3}
+    })
+end

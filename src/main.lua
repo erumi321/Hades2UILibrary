@@ -7,7 +7,8 @@
 local mods = rom.mods
 
 ---@module 'SGG_Modding-ENVY-auto'
-mods['SGG_Modding-ENVY'].auto()
+envy = mods['SGG_Modding-ENVY']
+envy.auto()
 -- ^ this gives us `public` and `import`, among others
 --	and makes all globals we define private to this plugin.
 ---@diagnostic disable: lowercase-global
@@ -52,10 +53,38 @@ local function on_reload()
 	import 'reload.lua'
 end
 
+function public.auto()
+	import 'Components/RadioButton.lua'
+	import 'Components/Dropdown.lua'
+	import 'Components/RadialMenu.lua'
+
+	local binds = {}
+	local env = envy.getfenv(2)
+	binds.RadioButton = {}
+	binds.Dropdown = {}
+	binds.RadialMenu = {}
+	for k,v in pairs(RadioButton) do
+		binds.RadioButton[k] = function(...)
+			return v(env, ...)
+		end
+	end
+	for k,v in pairs(Dropdown) do
+		binds.Dropdown[k] = function(...)
+			return v(env, ...)
+		end
+	end
+	for k,v in pairs(RadialMenu) do
+		binds.RadialMenu[k] = function(...)
+			return v(env, ...)
+		end
+	end
+	return binds
+end
+
 -- this allows us to limit certain functions to not be reloaded.
 local loader = reload.auto_single()
 
 -- this runs only when modutil and the game's lua is ready
-modutil.on_ready_final(function()
+modutil.once_loaded.game(function()
 	loader.load(on_ready, on_reload)
 end)
