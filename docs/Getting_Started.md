@@ -12,6 +12,6 @@ UILib.[component name].[function name](...)
 ```
 
 All components and their functions are found here:
-[Radial Menus](RadialMenu.md)
-[Dropdowns](Dropdown.md)
-[Radio Buttons](RadioButton.md)
+- [Radial Menus](RadialMenu.md)
+- [Dropdowns](Dropdown.md)
+- [Radio Buttons](RadioButton.md)
