@@ -2,23 +2,16 @@
 -- globals we define are private to our plugin!
 ---@diagnostic disable: lowercase-global
 
--- this file will be reloaded if it changes during gameplay,
+definition = {}
 
-RadialMenu = {}
-
-RadialMenu.Create = function(env, screen, args)
+definition.Create = function(instance, screen, args)
     local components = screen.Components
-    local guid = env._PLUGIN.guid
-    local key = ""
-    for a = 1, 10 do
-        key = key .. string.char(math.random(65, 65 + 25))
-    end
-    local guidKey = env._PLUGIN.guid .. key
+    local guidKey = component_instance_data[instance].guid
 
     local xPos = args.X or 0
     local yPos = args.Y or 0
 
-    components[guidKey] = CreateScreenComponent({
+    local component = CreateScreenComponent({
         Name = "BaseInteractableButton",
         Group = args.Group,
         Animation="GUI\\Grey_Node",
@@ -26,16 +19,14 @@ RadialMenu.Create = function(env, screen, args)
         Y = yPos,
         Scale = 0.03
     })
-    SetAlpha({Id = components[guidKey].Id, Fraction=0.01})
-    SetInteractProperty({DestinationId = components[guidKey].Id, Property = "FreeFormSelectable", Value = false})
+    SetAlpha({Id = component.Id, Fraction=0.01})
+    SetInteractProperty({DestinationId = component.Id, Property = "FreeFormSelectable", Value = false})
 
-    components[guidKey].env = env
-    components[guidKey].guid = guid
-    components[guidKey].screen = screen
-    components[guidKey].guidKey = guidKey
-    components[guidKey].args = args
-    components[guidKey].collapsed = true
-    components[guidKey].OnPressedFunctionName = RadialMenu.CenterPress
+    component.screen = screen
+    component.guidKey = guidKey
+    component.args = args
+    component.collapsed = true
+    component.OnPressedFunctionName = definition.CenterPress
 
     local currentAngle = args.StartAngle or 0
     local maxAngle = args.EndAngle or 360
@@ -73,15 +64,15 @@ RadialMenu.Create = function(env, screen, args)
         components[buttonKey].value = v.Value
         components[buttonKey].screen = screen
         components[buttonKey].guidKey = guidKey
-        components[buttonKey].parent = components[guidKey]
-        components[buttonKey].OnMouseOverFunctionName = RadialMenu.MouseOverButtonInternal
-        components[buttonKey].OnMouseOffFunctionName = RadialMenu.MouseOffButtonInternal
-        components[buttonKey].OnPressedFunctionName = RadialMenu.OnPress
+        components[buttonKey].parent = component
+        components[buttonKey].OnMouseOverFunctionName = definition.MouseOverButtonInternal
+        components[buttonKey].OnMouseOffFunctionName = definition.MouseOffButtonInternal
+        components[buttonKey].OnPressedFunctionName = definition.OnPress
 
         AttachLua({ Id = components[buttonKey].Id, Table = components[buttonKey] })
 
         if k == 1 then
-            components[guidKey].CurrentGamepadTarget = components[buttonKey]
+            component.CurrentGamepadTarget = components[buttonKey]
         end
 
         local sX = args.ScaleX or 1
@@ -106,8 +97,8 @@ RadialMenu.Create = function(env, screen, args)
         components[targetKey].args = args
         components[targetKey].screen = screen
         components[targetKey].guidKey = guidKey
-        components[targetKey].parent = components[guidKey]
-        components[targetKey].OnMouseOverFunctionName = RadialMenu.MoveButton
+        components[targetKey].parent = component
+        components[targetKey].OnMouseOverFunctionName = definition.MoveButton
 
         AttachLua({ Id = components[targetKey].Id, Table = components[targetKey] })
 
@@ -138,17 +129,17 @@ RadialMenu.Create = function(env, screen, args)
         currentAngle = currentAngle + angleIncrement
     end
 
-    return components[guidKey]
+    return component
 end
 
-RadialMenu.Expand = function(env, RadialMenuObject)
-    if RadialMenuObject.expanded then
+definition.Expand = function(instance)
+    if instance.expanded then
         return
     end
-    RadialMenuObject.expanded = true
-    local screen = RadialMenuObject.screen
+    instance.expanded = true
+    local screen = instance.screen
     local components = screen.Components
-    local args = RadialMenuObject.args
+    local args = instance.args
 
     local currentAngle = args.StartAngle or 0
     local maxAngle = args.EndAngle or 360
@@ -160,7 +151,7 @@ RadialMenu.Expand = function(env, RadialMenuObject)
     end
     local radius = args.Radius or 100
     for k,v in ipairs(args.Options) do
-        local optionKey = RadialMenuObject.guidKey .. "Option" .. k
+        local optionKey = instance.guidKey .. "Option" .. k
         local buttonKey = optionKey .. "Button"
         local imageKey = optionKey .. "Image"
         local targetKey = optionKey .. "Target"
@@ -184,14 +175,14 @@ RadialMenu.Expand = function(env, RadialMenuObject)
     end
 end
 
-RadialMenu.Collapse = function(env, RadialMenuObject)
-    if RadialMenuObject.expanded == false then
+definition.Collapse = function(instance)
+    if instance.expanded == false then
         return
     end
-    RadialMenuObject.expanded = false
-    local screen = RadialMenuObject.screen
+    instance.expanded = false
+    local screen = instance.screen
     local components = screen.Components
-    local args = RadialMenuObject.args
+    local args = instance.args
 
     local currentAngle = args.StartAngle or 0
     local maxAngle = args.EndAngle or 360
@@ -209,7 +200,7 @@ RadialMenu.Collapse = function(env, RadialMenuObject)
     })
 
     for k,v in ipairs(args.Options) do
-        local optionKey = RadialMenuObject.guidKey .. "Option" .. k
+        local optionKey = instance.guidKey .. "Option" .. k
         local buttonKey = optionKey .. "Button"
         local imageKey = optionKey .. "Image"
         local targetKey = optionKey .. "Target"
@@ -236,13 +227,13 @@ RadialMenu.Collapse = function(env, RadialMenuObject)
     end
 end
 
-RadialMenu.Destroy = function(env, RadialMenuObject)
-    local screen = RadialMenuObject.screen
+definition.Destroy = function(instance)
+    local screen = instance.screen
     local components = screen.Components
-    local args = RadialMenuObject.args
+    local args = instance.args
 
     for k,v in ipairs(args.Options) do
-        local optionKey = RadialMenuObject.guidKey .. "Option" .. k
+        local optionKey = instance.guidKey .. "Option" .. k
         local buttonKey = optionKey .. "Button"
         local imageKey = optionKey .. "Image"
         local targetKey = optionKey .. "Target"
@@ -250,16 +241,16 @@ RadialMenu.Destroy = function(env, RadialMenuObject)
         Destroy({Ids = {components[buttonKey].Id, components[imageKey].Id, components[targetKey].Id}})
     end
 
-    Destroy({Id = RadialMenuObject.Id})
+    Destroy({Id = instance.Id})
 end
 
-RadialMenu.OnPress = function(screen, button)
+definition.OnPress = function(screen, button)
     if button.args.OnPressFunction then
         button.args.OnPressFunction(button.parent, button.value)
     end
 end
 
-RadialMenu.MouseOverButtonInternal = function(button)
+definition.MouseOverButtonInternal = function(button)
     local screen = button.screen
     local components = screen.Components
     local key = button.guidKey .. "Option" .. button.index .. "Button"
@@ -275,7 +266,7 @@ RadialMenu.MouseOverButtonInternal = function(button)
     end
 end
 
-RadialMenu.MouseOffButtonInternal = function(button)
+definition.MouseOffButtonInternal = function(button)
     local screen = button.screen
     local components = screen.Components
     for k,v in ipairs(button.args.Options) do
@@ -289,7 +280,7 @@ RadialMenu.MouseOffButtonInternal = function(button)
         })
     end
 end
-RadialMenu.MoveButton = function(button)
+definition.MoveButton = function(button)
     local screen = button.screen
     local components = screen.Components
     local guidKey = button.guidKey
@@ -300,13 +291,15 @@ RadialMenu.MoveButton = function(button)
     TeleportCursor({DestinationId = button.parent.Id})
 
     thread(function()
-        RadialMenu.MouseOffButtonInternal(components[key])
-        RadialMenu.MouseOverButtonInternal(components[key])
+        definition.MouseOffButtonInternal(components[key])
+        definition.MouseOverButtonInternal(components[key])
     end)
 
     button.parent.CurrentGamepadTarget = components[key]
 end
 
-RadialMenu.CenterPress = function(screen, button)
-    RadialMenu.OnPress(screen, button.CurrentGamepadTarget)
+definition.CenterPress = function(screen, button)
+    definition.OnPress(screen, button.CurrentGamepadTarget)
 end
+
+return definition

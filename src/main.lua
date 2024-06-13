@@ -29,19 +29,95 @@ sjson = mods['SGG_Modding-SJSON']
 ---@module 'SGG_Modding-ModUtil'
 modutil = mods['SGG_Modding-ModUtil']
 
----@module 'SGG_Modding-Chalk'
-chalk = mods["SGG_Modding-Chalk"]
 ---@module 'SGG_Modding-ReLoad'
 reload = mods['SGG_Modding-ReLoad']
 
----@module 'config'
-config = chalk.auto 'config.lua'
--- ^ this updates our `.cfg` file in the config folder!
-public.config = config -- so other mods can access our config
+local components_path = rom.path.combine(_PLUGIN.plugins_mod_folder_path,'Components')
+
+component_class_data = setmetatable({},{__mode = 'k'})
+component_instance_data = setmetatable({},{__mode = 'k'})
+
+local component_class_meta = {
+	__call = function(s,...)
+		return s.Create(...)
+	end,
+	__newindex = function(s)
+		error('component classes should not be modified',2)
+	end
+}
+
+public.Components = {}
+
+local per_plugin_key_index = {}
+
+local function generate_guid_key(env)
+	local guid = env._PLUGIN.guid
+	local keyi = per_plugin_key_index[guid] or 0
+	keyi = keyi + 1
+	per_plugin_key_index[guid] = keyi
+
+	-- this should be completely unique global ID for a screen object
+    local guidKey = _PLUGIN.guid .. '|' .. guid .. '|' ..  tostring(keyi)
+	return guidKey
+end
+
+local function define_component_class(name, component_definition)
+
+	local constructor = component_definition.Create
+	local methods = {}
+	for k,v in pairs(component_definition) do
+		if k ~= 'Create' then
+			methods[k] = v
+		end
+	end
+	
+	local component_class = {}
+	local data = {}
+	component_class_data[component_class] = data
+	
+	local endowed_constructor = function(env, screen, ...)
+		local key = generate_guid_key(env)
+		local component_instance = {}
+		local instance_data = { guid = key, class = component_class }
+		component_instance_data[component_instance] = instance_data
+
+		local inner_component = constructor(instance_data, screen, ...)
+		instance_data.object = inner_component
+
+		for k,v in pairs(methods) do
+			component_instance[k] = function(...)
+				return v(instance_data,...)
+			end
+		end
+
+		screen.Components[key] = inner_component
+		return component_instance
+	end
+
+	data.name = name
+	data.create = endowed_constructor
+	data.methods = methods
+
+	component_class.Create = endowed_constructor
+	for k,v in pairs(methods) do
+		component_class[k] = v
+	end
+	
+	setmetatable(component_class,component_class_meta)
+
+	public.Components[name] = component_class
+	return component_class
+end
+
+local function define_components()
+	for _, filename in ipairs(rom.path.get_files(components_path)) do 
+		local name = rom.path.stem(filename)
+		define_component_class(name, import(filename))
+	end
+end
 
 local function on_ready()
 	-- what to do when we are ready, but not re-do on reload.
-	if config.enabled == false then return end
 	
 	import 'ready.lua'
 end
@@ -53,30 +129,20 @@ local function on_reload()
 	import 'reload.lua'
 end
 
-function public.auto()
-	import 'Components/RadioButton.lua'
-	import 'Components/Dropdown.lua'
-	import 'Components/RadialMenu.lua'
+define_components()
 
+function public.auto()
 	local binds = {}
 	local env = envy.getfenv(2)
-	binds.RadioButton = {}
-	binds.Dropdown = {}
-	binds.RadialMenu = {}
-	for k,v in pairs(RadioButton) do
-		binds.RadioButton[k] = function(...)
-			return v(env, ...)
+	for name, class in pairs(public.Components) do
+		local bind = {}
+		for k,v in pairs(class) do
+			bind[k] = v
 		end
-	end
-	for k,v in pairs(Dropdown) do
-		binds.Dropdown[k] = function(...)
-			return v(env, ...)
+		bind.Create = function(...)
+			return class.Create(env, ...)
 		end
-	end
-	for k,v in pairs(RadialMenu) do
-		binds.RadialMenu[k] = function(...)
-			return v(env, ...)
-		end
+		binds[name] = setmetatable(bind,component_class_meta)
 	end
 	return binds
 end
