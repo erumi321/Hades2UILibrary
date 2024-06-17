@@ -1,10 +1,10 @@
 # Dropdown.Create
 ```lua
-Dropdown.Create(screen, args)
+Dropdown(screen, args)
 ```
 Creates a Dropdown object and all its children components within the passed screen, the Dropdown is not expanded on creation.
 
-Returns the Dropdown object to be used in other functions.
+Returns the Dropdown object.
 
 ### Parameters
 - `screen`: The screen which the Dropdown objects are created in
@@ -32,13 +32,13 @@ If this returns a truthy value then the Dropdown's text is updated to be equal t
 
 # Dropdown.AddOption
 ```lua
-Dropdown.AddOption(DropdownObject, option)
+Dropdown.AddOption(option)
 ```
-Adds `option` to the list of `Options` within the passed `DropdownObject`, if the Dropdown is expanded then the button is automatically added visually.
+Adds `option` to the list of `Options` within the `DropdownObject`, if the Dropdown is expanded then the button is automatically added visually.
 
 # Dropdown.RemoveOption
 ```lua
-Dropdown.RemoveOption(DropdownObject, option)
+Dropdown.RemoveOption(option)
 ```
 If `option` is a string then that option is searched for and removed from `DropdownObject`'s `Options`.
 If `option` is a number then the option at that index is removed from `DropdownObject`'s `Options`.
@@ -52,8 +52,7 @@ Destroys the `DropdownObject` and all its children objects
 # Example
 ```lua
 function createMyDropdown(screen)
-    local components = screen.Components
-    components["DropdownTest"] = UILib.Dropdown.Create(screen, {
+    local myDropdown = UILib.Dropdown(screen, "myDropdown", {
         Placeholder = "Dropdown",
         X = 400,
         Y = 100,

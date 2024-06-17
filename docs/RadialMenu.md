@@ -1,10 +1,10 @@
 # RadialMenu.Create
 ```lua
-RadialMenu.Create(screen, args)
+RadialMenu(screen, key, args)
 ```
 Creates a RadialMenu object and all its children components within the passed screen, the RadialMenu is not expanded on creation.
 
-Returns the RadialMenu object to be used in other functions
+Returns the RadialMenu object.
 
 ### Parameters
 - `screen`: The screen which the Radial Menu is created in
@@ -41,7 +41,7 @@ Each option is a table in the form
     - `ScaleY`: The Y Scale of just the icon
 
 ### OnSelectFunction
-This function is called whenever a Radial Menu's button is clicked, it is passed a RadialMenu object and the value of the button clicked:
+This function is called whenever a Radial Menu's button is clicked, it is passed the RadialMenu object that was interacted with and the value of the button clicked:
 ```lua
 function RadialSelected(RadialMenuObject, value)
 ```
@@ -49,27 +49,21 @@ function RadialSelected(RadialMenuObject, value)
 
 # RadialMenu.Expand
 ```lua
-RadialMenu.Expand(RadialMenuObject)
+RadialMenu.Expand()
 ```
-Expands the passed Radial Menu by showing and enabling them, does nothing if the Radial Menu is already expanded. Instant if `ExpansionTime` is 0, otherwise takes `ExpansionTime` seconds to complete.
-
-- `RadialMenuObject`: The RadialMenu to expand
+Expands the Radial Menu's buttons, does nothing if the Radial Menu is already expanded. Instant if `ExpansionTime` is 0, otherwise takes `ExpansionTime` seconds to complete.
 
 # RadialMenu.Collapse
 ```lua
-RadialMenu.Collapse(RadialMenuObject)
+RadialMenu.Collapse()
 ```
-Collapses the passed Radial Menu by hiding and disabling them, does nothing if the Radial Menu is already collapsed. Instant if `ExpansionTime` is 0, otherwise takes `ExpansionTime` seconds to complete.
-
-- `RadialMenuObject`: The RadialMenu to collapse
+Collapses the Radial Menu's buttons, does nothing if the Radial Menu is already collapsed. Instant if `ExpansionTime` is 0, otherwise takes `ExpansionTime` seconds to complete.
 
 # RadialMenu.Destroy
 ```lua
-RadialMenu.Destroy(RadialMenuObject)
+RadialMenu.Destroy()
 ```
-Destroys the passed Radial Menu by destroying it and all its children objects.
-
-- `RadialMenuObject`: The RadialMenu to destroy
+Destroys the Radial Menu by destroying it and all its children objects.
 
 # Example
 ```lua
@@ -98,7 +92,7 @@ function createMyRadialMenu(screen)
         Justification = "Left",
     })
 
-    components["RadialMenuTest"] = UILib.RadialMenu.Create(screen, {
+    local myRadialMenu = UILib.RadialMenu(screen, "myRadialMenu", {
         StartAngle = 0,
         EndAngle = 90,
         Radius = 200,
@@ -146,11 +140,11 @@ function createMyRadialMenu(screen)
         },
     })
 
-    UILib.RadialMenu.Expand(components["RadialMenuTest"] )
+    myRadialMenu.Expand()
 end
 
 function RadialSelected(RadialMenuObject, value)
 	print("RADIAL: " .. value)
-	UILib.RadialMenu.Collapse(RadialMenuObject)
+	RadialMenuObject.Collapse()
 end
 ```

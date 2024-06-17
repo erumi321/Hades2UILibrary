@@ -8,11 +8,10 @@ See [Getting Started](docs/Getting_Started.md)
 - [Radial Menus](docs/RadialMenu.md)
 - [Dropdowns](docs/Dropdown.md)
 - [Radio Buttons](docs/RadioButton.md)
-
+- [Scrolling Lists](docs/ScrollingList.md)
 ## Planned
 - On-screen keyboard w/ Text fields
-- Sliders (we can query mouse coords praise be)
-- Scrolling lists
+- Sliders (we can query mouse coors with h2m)
 - Sub-menus
 - Pages (view pony menu)
 - Confirm Dialog

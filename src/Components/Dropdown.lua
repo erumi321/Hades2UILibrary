@@ -4,194 +4,33 @@
 
 -- this file will be reloaded if it changes during gameplay,
 
-Dropdown = {}
-
-function Dropdown.Create(env, screen, args)
-    local components = screen.Components
-    local guid = env._PLUGIN.guid
-    local key = ""
-    for a = 1, 10 do
-        key = key .. string.char(math.random(65, 65 + 25))
-    end
-    local guidKey = env._PLUGIN.guid .. key
-
-    local currentXPos = args.X or 0
-    local currentYPos = args.Y or 0
-
-    components[guidKey] = CreateScreenComponent({
-        Name = "ButtonDefault",
-        Group = args.Group,
-        X = currentXPos,
-        Y = currentYPos,
-        Scale = 1,
-    })
-    components[guidKey].env = env
-    components[guidKey].guid = guid
-    components[guidKey].screen = screen
-    components[guidKey].guidKey = guidKey
-    components[guidKey].args = args
-    components[guidKey].expanded = false
-    components[guidKey].OnPressedFunctionName = Dropdown.Toggle
-
-    SetScaleX({Id = components[guidKey].Id, Fraction=args.ScaleX or 1})
-    SetScaleY({Id = components[guidKey].Id, Fraction=args.ScaleY or 1})
-    AttachLua({ Id = components[guidKey].Id, Table = components[guidKey] })
-
-    local dropdownArrowKey = guidKey .. "Arrow"
-    components[dropdownArrowKey] = CreateScreenComponent({
-        Name = "BlankObstacle",
-        Group = args.Group,
-        X = currentXPos,
-        Y = currentYPos,
-        Scale = 1,
-    })
-    SetAnimation({DestinationId = components[dropdownArrowKey].Id, Name="Arrow_LeftHighlight"})
-    SetScaleX({Id = components[dropdownArrowKey].Id, Fraction=(args.ScaleX or 1) * 0.6})
-    SetScaleY({Id = components[dropdownArrowKey].Id, Fraction=(args.ScaleY or 1) * 0.6})
-    Attach({ Id = components[dropdownArrowKey].Id, DestinationId = components[guidKey].Id, OffsetX = 100 * (args.ScaleX or 1), OffsetY = 0})
-
-    local startText = args.Placeholder or ""
-    if args.DefaultIndex then
-        startText = args.Options[args.DefaultIndex]
-    end
-    components[guidKey].value = startText
-    CreateTextBox({
-        Id =  components[guidKey].Id,
-        Text = startText,
-        FontSize = (args.FontSize or 24),
-        OffsetX = -100 * (args.ScaleX or 1),
-        OffsetY = 0,
-        Color = Color.White,
-        Font = "P22UndergroundSCMedium",
-        Group = args.Group or "",
-        ShadowBlur = 0,
-        ShadowColor = { 0, 0, 0, 1 },
-        ShadowOffset = { 0, 2 },
-        Justification = "Left"
-    })
-
-    return components[guidKey]
-end
-
-Dropdown.AddOption = function(env, DropdownObject, option)
-    local screen = DropdownObject.screen
-    local components = screen.Components
-    local args = DropdownObject.args
-
-    table.insert(DropdownObject.args.Options, option)
-
-    if DropdownObject.expanded then
-        local newIndex = #DropdownObject.args.Options
-        local baseYOffset = 68 * (args.ScaleY or 1) * 0.9
-        local currentYOffset = newIndex * baseYOffset + 3
-
-        local arrowKey = DropdownObject.guidKey .. "Arrow"
-        SetAnimation({DestinationId = components[arrowKey].Id, Name="Arrow_DownHighlight"})
-
-        local key = DropdownObject.guidKey .. "Dropdown" .. option
-
-        components[key] = CreateScreenComponent({
-            Name = "ButtonDefault",
-            Group = args.Group,
-            Scale = 1
-        })
-
-        components[key].OnPressFunc = args.OnSelectedFunction or function() end
-        components[key].value = option
-        components[key].guid = DropdownObject.guid
-        components[key].guidKey = DropdownObject.guidKey
-        components[key].args = args
-        components[key].parent = DropdownObject
-        components[key].OnPressedFunctionName = Dropdown.OnPress
-
-        SetScaleX({Id = components[key].Id, Fraction=(args.ScaleX or 1) * 0.9})
-        SetScaleY({Id = components[key].Id, Fraction=(args.ScaleY or 1) * 0.9})
-        Attach({ Id = components[key].Id, DestinationId = components[DropdownObject.guidKey].Id, OffsetX = 5, OffsetY = currentYOffset})
-
-        CreateTextBox({
-            Id = components[key].Id,
-            Text = option,
-            FontSize = (args.ItemFontSize or 20),
-            OffsetX = -100 * (args.ScaleX or 1) * 0.9,
-            OffsetY = 0,
-            Color = Color.White,
-            Font = "P22UndergroundSCMedium",
-            Group = args.Group or "",
-            ShadowBlur = 0,
-            ShadowColor = { 0, 0, 0, 1 },
-            ShadowOffset = { 0, 2 },
-            Justification = "Left"
-        })
-    end
-end
-
-Dropdown.RemoveOption = function(env, DropdownObject, option)
-    local screen = DropdownObject.screen
-    local components = screen.Components
-    local args = DropdownObject.args
-
-    if type(option) == "string" then
-        local removed = false
-        local baseYOffset = 68 * (args.ScaleY or 1) * 0.9
-
-        local newOptions = {}
-
-        for k,v in ipairs(args.Options) do
-            if v == option then
-                local key = DropdownObject.guidKey .. "Dropdown" .. v
-                Destroy({Id = components[key].Id})
-
-                removed = true
-            else
-                table.insert(newOptions, v)
-                if removed == true then
-                    local key = DropdownObject.guidKey .. "Dropdown" .. v
-                    local currentYOffset = (k - 1) * baseYOffset + 3
-    
-                    Attach({ Id = components[key].Id, DestinationId = components[DropdownObject.guidKey].Id, OffsetX = 5, OffsetY = currentYOffset})
-                end
-            end
-        end
-
-        DropdownObject.args.Options = newOptions
-    elseif type(option) == "number" then
-        local key = DropdownObject.guidKey .. "Dropdown" .. DropdownObject.args.Options[option]
-        Destroy({Id = components[key].Id})
-        table.remove(DropdownObject.args.Options, option)
-
-        local baseYOffset = 68 * (args.ScaleY or 1) * 0.9
-        for k = option, #args.Options do
-            local v = args.Options[k]
-            local key = DropdownObject.guidKey .. "Dropdown" .. v
-            local currentYOffset = k * baseYOffset + 3
-
-            Attach({ Id = components[key].Id, DestinationId = components[DropdownObject.guidKey].Id, OffsetX = 5, OffsetY = currentYOffset})
-        end
-    end
-end
-
-Dropdown.Destroy = function(env, DropdownObject)
-    local screen = DropdownObject.screen
-    local components = screen.Components
-    local args = DropdownObject.args
-    local guidKey = DropdownObject.guidKey
-    local arrowKey = guidKey .. "Arrow"
-    if DropdownObject.expanded then
-        for k,v in ipairs(args.Options) do
-            local key = guidKey .. "Dropdown" .. v
-            Destroy({Id = components[key].Id})
-        end
-    end
-    Destroy({Ids = {components[arrowKey].Id, components[guidKey].Id}})
-end
+definition = {}
 
 --not public
-Dropdown.Toggle = function(screen, button)
-    local components = screen.Components
-    local args = button.args
-    local guidKey = button.guidKey
 
-    if button.expanded == false then
+local OnPress = function(screen, button)
+    local components = screen.Components
+    local instance, data = GetInstanceAndDataByGUID(button.guid)
+    local object = data.object
+
+    local update = data.args.OnSelectedFunction(instance, button.value)
+
+    if update then
+        ModifyTextBox({
+            Id = object.Id,
+            Text = button.value
+        })
+        data.value = button.value
+    end
+end
+
+local ToggleDropdown = function(screen, button)
+    local instance, data = GetInstanceAndDataByGUID(button.guid)
+    local guidKey = data.guid
+    local args = data.args
+    local components = screen.Components
+
+    if data.expanded == false then
         local baseYOffset = 68 * (args.ScaleY or 1) * 0.9
         local currentYOffset = 1 * baseYOffset + 3
 
@@ -199,25 +38,25 @@ Dropdown.Toggle = function(screen, button)
         SetAnimation({DestinationId = components[arrowKey].Id, Name="Arrow_DownHighlight"})
 
         for k,v in ipairs(args.Options) do
-            local key = guidKey .. "Dropdown" .. v
+            local key = guidKey .. "Dropdown"
 
-            components[key] = CreateScreenComponent({
+            local c = CreateScreenComponent({
                 Name = "ButtonDefault",
                 Group = args.Group,
                 Scale = 1
             })
+            key = key .. c.Id
+            components[key] = c 
 
-            components[key].OnPressFunc = args.OnSelectedFunction or function() end
             components[key].value = v
-            components[key].guid = button.guid
-            components[key].guidKey = guidKey
-            components[key].args = args
-            components[key].parent = button
-            components[key].OnPressedFunctionName = Dropdown.OnPress
+            components[key].guid = guidKey
+            components[key].OnPressedFunctionName = OnPress
 
             SetScaleX({Id = components[key].Id, Fraction=(args.ScaleX or 1) * 0.9})
             SetScaleY({Id = components[key].Id, Fraction=(args.ScaleY or 1) * 0.9})
-            Attach({ Id = components[key].Id, DestinationId = components[guidKey].Id, OffsetX = 5, OffsetY = currentYOffset})
+            Attach({ Id = components[key].Id, DestinationId = button.Id, OffsetX = 5, OffsetY = currentYOffset})
+
+            table.insert(data.ChildButtons, {Value = v, Id=components[key].Id})
 
             CreateTextBox({
                 Id = components[key].Id,
@@ -236,31 +75,185 @@ Dropdown.Toggle = function(screen, button)
 
             currentYOffset = baseYOffset * (k + 1) + 3
         end
-        button.expanded = true
+        data.expanded = true
     else
         local arrowKey = guidKey .. "Arrow"
         SetAnimation({DestinationId = components[arrowKey].Id, Name="Arrow_LeftHighlight"})
 
-        for k,v in ipairs(args.Options) do
-            local key = guidKey .. "Dropdown" .. v
-            Destroy({Id = components[key].Id})
+        for k,v in pairs(data.ChildButtons) do
+            Destroy({Id = v.Id})
         end
-        button.expanded = false
+        data.ChildButtons = {}
+        data.expanded = false
     end
 end
 
---not public
-Dropdown.OnPress = function(screen, button)
+definition.Create = function(instance, data, screen)
     local components = screen.Components
-    local update = button.OnPressFunc(button.parent, button.value)
+    local args = data.args
+    local guidKey = data.guid
 
-    if update then
-        local guidKey = button.guidKey
-        ModifyTextBox({
-            Id =  components[guidKey].Id,
-            Text = button.value
+    local currentXPos = args.X or 0
+    local currentYPos = args.Y or 0
+
+    local component = CreateScreenComponent({
+        Name = "ButtonDefault",
+        Group = args.Group,
+        X = currentXPos,
+        Y = currentYPos,
+        Scale = 1,
+    })
+    screen.Components[guidKey] = component
+
+    data.ChildButtons = {}
+    data.expanded = false
+    component.guid = guidKey
+    component.screen = screen
+    component.OnPressedFunctionName = ToggleDropdown
+
+    SetScaleX({Id = component.Id, Fraction=args.ScaleX or 1})
+    SetScaleY({Id = component.Id, Fraction=args.ScaleY or 1})
+    AttachLua({ Id = component.Id, Table = component })
+
+    local dropdownArrowKey = guidKey .. "Arrow"
+    components[dropdownArrowKey] = CreateScreenComponent({
+        Name = "BlankObstacle",
+        Group = args.Group,
+        X = currentXPos,
+        Y = currentYPos,
+        Scale = 1,
+    })
+
+    SetAnimation({DestinationId = components[dropdownArrowKey].Id, Name="Arrow_LeftHighlight"})
+    SetScaleX({Id = components[dropdownArrowKey].Id, Fraction=(args.ScaleX or 1) * 0.6})
+    SetScaleY({Id = components[dropdownArrowKey].Id, Fraction=(args.ScaleY or 1) * 0.6})
+    Attach({ Id = components[dropdownArrowKey].Id, DestinationId = component.Id, OffsetX = 100 * (args.ScaleX or 1), OffsetY = 0})
+
+    local startText = args.Placeholder or ""
+    if args.DefaultIndex then
+        startText = args.Options[args.DefaultIndex]
+    end
+    data.value = startText
+    CreateTextBox({
+        Id =  component.Id,
+        Text = startText,
+        FontSize = (args.FontSize or 24),
+        OffsetX = -100 * (args.ScaleX or 1),
+        OffsetY = 0,
+        Color = Color.White,
+        Font = "P22UndergroundSCMedium",
+        Group = args.Group or "",
+        ShadowBlur = 0,
+        ShadowColor = { 0, 0, 0, 1 },
+        ShadowOffset = { 0, 2 },
+        Justification = "Left"
+    })
+
+    return component
+end
+
+definition.AddOption = function(instance, data, option)
+    local object = data.object
+    local guidKey = data.guid
+    local args = data.args
+    local screen = object.screen
+    local components = screen.Components
+
+    table.insert(args.Options, option)
+
+    if data.expanded then
+        local newIndex = #args.Options
+        local baseYOffset = 68 * (args.ScaleY or 1) * 0.9
+        local currentYOffset = newIndex * baseYOffset + 3
+
+        local arrowKey = guidKey .. "Arrow"
+        SetAnimation({DestinationId = components[arrowKey].Id, Name="Arrow_DownHighlight"})
+
+        local key = guidKey .. "Dropdown"
+
+        local c = CreateScreenComponent({
+            Name = "ButtonDefault",
+            Group = args.Group,
+            Scale = 1
         })
-        components[guidKey].value = button.value
+        key = key .. c.Id
+        components[key] = c
+
+        components[key].value = option
+        components[key].guid = guidKey
+        components[key].OnPressedFunctionName = OnPress
+
+        SetScaleX({Id = components[key].Id, Fraction=(args.ScaleX or 1) * 0.9})
+        SetScaleY({Id = components[key].Id, Fraction=(args.ScaleY or 1) * 0.9})
+        Attach({ Id = components[key].Id, DestinationId = object.Id, OffsetX = 5, OffsetY = currentYOffset})
+
+        table.insert(data.ChildButtons, {Value = option, Id=components[key].Id})
+
+        CreateTextBox({
+            Id = components[key].Id,
+            Text = option,
+            FontSize = (args.ItemFontSize or 20),
+            OffsetX = -100 * (args.ScaleX or 1) * 0.9,
+            OffsetY = 0,
+            Color = Color.White,
+            Font = "P22UndergroundSCMedium",
+            Group = args.Group or "",
+            ShadowBlur = 0,
+            ShadowColor = { 0, 0, 0, 1 },
+            ShadowOffset = { 0, 2 },
+            Justification = "Left"
+        })
     end
 end
 
+definition.RemoveOption = function(instance, data, option)
+    local object = data.object
+    local args = data.args
+
+    if type(option) == "string" then
+        local removed = false
+        local baseYOffset = 68 * (args.ScaleY or 1) * 0.9
+
+        local newChildButtons = {}
+        local newOptions = {}
+
+        for k,v in pairs(data.ChildButtons) do
+            if v.Value == option and removed == false then
+                Destroy({Id = v.Id})
+
+                removed = true
+            else
+                table.insert(newChildButtons, v)
+                table.insert(newOptions, v.Value)
+                if removed == true and object.expanded == true then
+                    local currentYOffset = (k - 1) * baseYOffset + 3
+    
+                    Attach({ Id = v.Id, DestinationId = object.Id, OffsetX = 5, OffsetY = currentYOffset})
+                end
+            end
+        end
+
+        args.Options = newOptions
+        data.ChildButtons = newChildButtons
+    end
+end
+
+definition.Destroy = function(instance, data)
+    local object = data.object
+    local guidKey = data.guid
+    local screen = object.screen
+    local components = screen.Components
+
+    local arrowKey = guidKey .. "Arrow"
+    if data.expanded then
+        for k,v in pairs(data.ChildButtons) do
+            Destroy({Id = v.Id})
+        end
+    end
+    Destroy({Ids = {components[arrowKey].Id, object.Id}})
+    screen[guidKey] = nil
+    data.object = nil
+    instance = nil
+end
+
+return definition

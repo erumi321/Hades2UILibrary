@@ -1,10 +1,10 @@
 # RadioButton.Create
 ```lua
-RadioButton.Create(screen, args)
+RadioButton(screen, key, args)
 ```
 Creates a RadioButton object and all its children components within the passed screen, nothing is selected on creation.
 
-Returns the RadioButton object to be used in other functions
+Returns the RadioButton object.
 
 ### Parameters
 - `screen`: The screen which the Radio Button objects are created in
@@ -45,17 +45,14 @@ Returns two numbers, the first is the x-position of the button, the second is th
 
 # RadioButton.Destroy
 ```lua
-RadioButton.Destroy(RadioButtonObject)
+RadioButton.Destroy()
 ```
-Destroys the passed RadioButton object and all its children components
-
-- `RadioButtonObject`: The RadioButtonObject to destroy
+Destroys the RadioButton object and all its children components
 
 # Example
 ```lua
 function createMyRadioButton(screen)
-    local components = screen.Components
-    components["MyRadioButton"] = UILib.RadioButton.Create(screen, {
+    "myRadioButton" = UILib.RadioButton(screen, "myRadioButton", {
         X = 100,
         Y = 100,
         Group="Menu_UI_Inventory",

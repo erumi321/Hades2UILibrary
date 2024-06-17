@@ -5,7 +5,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "erumi321"
 name = "UILibrary"
-versionNumber = "0.1.0"
+versionNumber = "0.2.0"
 description = "Library for other mods to use that handles more complex UI elements"
 websiteUrl = "https://github.com/erumi321/Hades2UILibrary"
 containsNsfwContent = false

@@ -8,7 +8,12 @@ local public = {}
 --	---@return table c helpful description
 --	function public.do_stuff(a, b) end
 
+-- https://discord.com/channels/667753182608359424/1237738649484005469/1250904769162117140
+
 -------------Radio Buttons-------------
+
+---@class (exact) RadioButtonObject
+---@field public Destroy fun(): nil Destroys the RadioButton
 
 ---@class RadioButtonCreateArgs
 ---@field X number
@@ -23,16 +28,17 @@ local public = {}
 ---@field SpacingFunction? function
 
 ---@param screen table The screen to assign all created objects too
----@param key string The key to assign to the parent element of the radio buttons
+---@param key string The key used to refrence the component in UILib.Instances
 ---@param args RadioButtonCreateArgs Args of the button: takes X (int), Y (int), ScaleX (float), ScaleY (float), FontSize (int), Group (string), SpacingFunction (function), OnSelectedFunction (function), OnDeselectedFunction (function), Buttons (table). Buttons consists of a list of strings which is the label of each button
----@return table RadioButtonObject  Returns the object which is used to be passed to other RadioButton functions
-function public.RadioButton.Create(screen, args) end
-
----@param RadioButtonObject table Any radio button returned by Create
----@return nil
-function public.RadioButton.Destroy(RadioButtonObject) end
+---@return table RadioButtonObject  Returns the object which is used to call other RadioButton functions. **DO NOT ASSIGN THIS TO `screen` OR `screen.Components`**
+function public.RadioButton(screen, key, args) end
 
 -------------Dropdown-------------
+
+---@class (exact) DropdownObject
+---@field public AddOption fun(option: string): nil Adds `option` to Dropdown's options <br>   -`option`: The option value to add
+---@field public RemoveOption fun(option: string): nil Removes `option` from Dropdown's options <br> -`option`: Removes the option that has the value of `option`
+---@field public Destroy fun(): nil Destroys the DropdownObject
 
 ---@class DropdownCreateArgs
 ---@field Placeholder string
@@ -48,25 +54,17 @@ function public.RadioButton.Destroy(RadioButtonObject) end
 ---@field Options table<number, string>
 
 ---@param screen table The screen to assign all created objects too
+---@param key string The key used to refrence the component in UILib.Instances
 ---@param args DropdownCreateArgs Args of the button: takes Placeholder (string), X (int), Y (int), ScaleX (float), ScaleY (float), DefaultIndex (number), FontSize (int), ItemFontSize (int), Group (string), OnSelectedFunction (function), Options (table). Options consists of a list of strings which is the label of each dropdown button
----@return table DropdownObject Returns the object which is used to be passed to other Dropdown functions
-function public.Dropdown.Create(screen, args) end
-
----@param DropdownObject table The dropdown object to add the option to
----@param option string The value of the option to add
----@return nil
-function public.Dropdown.AddOption(DropdownObject, option) end
-
----@param DropdownObject table The dropdown object to remove the option from
----@param option string|number The option to remove, if a string remove that value, if a number then remove the option at that index
----@return nil
-function public.Dropdown.RemoveOption(DropdownObject, option) end
-
----@param DropdownObject table The Dropdown to destroy
----@return nil
-function public.Dropdown.Destroy(DropdownObject) end
+---@return DropdownObject DropdownObject Returns the object which is used call other Dropdown functions. **DO NOT ASSIGN THIS TO `screen` OR `screen.Components`**
+function public.Dropdown(screen, key, args) end
 
 -------------Radial Menu-------------
+
+---@class (exact) RadialMenuObject
+---@field public Expand fun(): nil Expands the RadialMenu
+---@field public Collapse fun(): nil Collapses the RadialMenu
+---@field public Destroy fun(): nil Destroys the RadialMenu
 
 ---@class RadialMenuOptionImage
 ---@field Path string
@@ -92,21 +90,49 @@ function public.Dropdown.Destroy(DropdownObject) end
 ---@field Options table<number, RadialMenuOption>
 
 ---@param screen table The screen to assign all created objects too
+---@param key string The key used to refrence the component in UILib.Instances
 ---@param args RadialMenuCreateArgs Args of the menu, takes StartAngle (number), EndAngle (number) Radius (number), Radius (number), X (number), Y (number), Group (string), ScaleX (number), ScaleY (number), TooltipTextboxId (Id), ExpansionTime (number), OnSelectFunction (function), Options (option) 
----@return table RadialMenuObject Returns the object which is used to be passed to other RadialMenu functions
-function public.RadialMenu.Create(screen, args) end
+---@return RadialMenuObject RadialMenuObject Returns the object which is used to call other RadialMenu functions. **DO NOT ASSIGN THIS TO `screen` OR `screen.Components`**
+function public.RadialMenu(screen, key, args) end
 
 
----@param RadialMenuObject table The RadialMenu to expand
----@return nil
-function public.RadialMenu.Expand(RadialMenuObject) end
+-------------Scrolling Lists-------------
+---@class (exact) ScrollingListObject
+---@field public RegisterItemId fun(itemId): nil Registers `itemId` to the ScrollingList so it handles movement and alpha <br> -`itemId`: The id of the screen component to register
+---@field public DeregisterItemId fun(itemId): nil Deregisters `itemId` from the ScrollingList so it stops handling movement and alpha <br> -`itemId`: The id of the screen component to deregister
+---@field public Destroy fun(): nil Destroys the ScrollingList
 
----@param RadialMenuObject table The RadialMenu to collapse
----@return nil
-function public.RadialMenu.Collapse(RadialMenuObject) end
 
----@param RadialMenuObject table The RadialMenu to destroy
----@return nil
-function public.RadialMenu.Destroy(RadialMenuObject) end
+---@alias ScrollingListDirection "Vertical" | "Horizontal"
+
+---@class ScrollingListBarArgs
+---@field BarSize? number
+---@field BarAnimation? string
+---@field SliderAnimation? string
+---@field SliderScale? number
+
+---@class ScrollingListArrowArgs
+---@field UpArrowObject? string
+---@field LeftArrowObject? string
+---@field RightArrowObject? string
+---@field DownArrowObject? string
+---@field Scale? number
+
+---@class ScrollingListCreateArgs
+---@field X number
+---@field Y number
+---@field Direction ScrollingListDirection
+---@field ViewWidth? number
+---@field ViewHeight? number
+---@field ScrollSpeed number
+---@field Bar? ScrollingListBarArgs
+---@field Arrows? ScrollingListArrowArgs
+---@field Items table<number, number>
+
+---@param screen table The screen to assign all created objects too
+---@param key string The key used to refrence the component in UILib.Instances
+---@param args ScrollingListCreateArgs Args of the list container, takes X (number), Y (number), Direction (Direction), ViewWidth/ViewHeight (number), ScrollSpeed (number), Bar (Bar Arg), Arrows (Arrows Args), Items (table)
+---@return ScrollingListObject ScrollingListObject Returns the object which is used to call other ScrollingList functions. **DO NOT ASSIGN THIS TO `screen` OR `screen.Components`**
+function public.ScrollingList(screen, key, args) end
 
 return public
