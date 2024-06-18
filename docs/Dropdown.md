@@ -1,4 +1,4 @@
-# Dropdown.Create
+# Creation
 ```lua
 Dropdown(screen, args)
 ```
@@ -8,6 +8,7 @@ Returns the Dropdown object.
 
 ### Parameters
 - `screen`: The screen which the Dropdown objects are created in
+- `key`: The key used to reference the object in `UILib.Instances`
 - `args`: The args of the Dropdown object which are:
     - `Placeholder`: The default text in the dropdown when nothing is selected (not used if `DefaultIndex` is not nil)
     - `X`: The X position of the dropdown
@@ -40,8 +41,7 @@ Adds `option` to the list of `Options` within the `DropdownObject`, if the Dropd
 ```lua
 Dropdown.RemoveOption(option)
 ```
-If `option` is a string then that option is searched for and removed from `DropdownObject`'s `Options`.
-If `option` is a number then the option at that index is removed from `DropdownObject`'s `Options`.
+Removes the option with the same value as `option` from `DropdownObject`'s `Options`.
 
 # Dropdown.Destroy
 ```lua
@@ -57,8 +57,6 @@ function createMyDropdown(screen)
         X = 400,
         Y = 100,
         Group="Menu_UI_Inventory",
-        ScaleX = 1,
-        ScaleY = 1,
         FontSize = 24,
         ItemFontSize = 20,
         DefaultIndex = 1,

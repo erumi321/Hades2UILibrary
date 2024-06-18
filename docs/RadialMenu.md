@@ -1,4 +1,4 @@
-# RadialMenu.Create
+# Creation
 ```lua
 RadialMenu(screen, key, args)
 ```
@@ -8,6 +8,7 @@ Returns the RadialMenu object.
 
 ### Parameters
 - `screen`: The screen which the Radial Menu is created in
+- `key`: The key used to reference the object in `UILib.Instances`
 - `args`: The args of the RadialMenu, they are:
     - `StartAngle`: The angle to set the first button at, in degrees and standard position (0 is directly left, 90 is directly up)
     - `EndAngle`: The angle to end at, in degrees and standard position, the last button is located at EndAngle, unless `(EndAngle-StartAngle) % 360 = 0` then the buttons are evenly distributed around a circle
@@ -99,8 +100,6 @@ function createMyRadialMenu(screen)
         X = 400,
         Y = 400,
         Group = "Menu_UI_Inventory",
-        ScaleX = 1,
-        ScaleY = 1,
         TooltipTextboxId = components[buttonKey].Id,
         ExpansionTime = 1,
         OnPressFunction = RadialSelected,

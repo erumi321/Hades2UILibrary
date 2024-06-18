@@ -344,7 +344,6 @@ end
 definition.RegisterItemId = function(instance, data, itemId)
     table.insert(data.args.Items, itemId)
     local object = data.object
-    DebugPrintTable(object, false)
     local args = data.args
     local screen = object.screen
     UpdateVisiblity(screen, args, object, itemId, args.Direction == "Vertical")
