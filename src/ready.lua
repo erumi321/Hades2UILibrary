@@ -22,7 +22,7 @@ modutil.mod.Path.Wrap("OnScreenOpened", function(baseFunc, screen, args)
 end)
 
 local guiPath = rom.path.combine(rom.paths.Content, 'Game/Obstacles/GUI.sjson')
-local guiAnimPath = rom.path.combine(rom.paths.Content, 'Game/Animations/GUIAnimations.sjson')
+local guiAnimPath = rom.path.combine(rom.paths.Content, 'Game/Animations/GUI_Screens_VFX.sjson')
 
 ---Radial Menus---
 sjson.hook(guiAnimPath, function(data)
